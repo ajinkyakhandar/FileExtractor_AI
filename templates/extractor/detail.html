@@ -1,0 +1,15 @@
+{% extends "extractor/base.html" %}
+{% block title %}{{ document.original_filename }} · Papertrail{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="{% url 'index' %}">← All documents</a></p>
+<section class="detail-heading"><div><p class="eyebrow">EXTRACTION RESULT</p><h1>{{ document.original_filename }}</h1><p class="detail-date">Uploaded {{ document.created_at|date:"M j, Y · g:i A" }}</p></div><span class="status status-{{ document.status }}">{{ document.get_status_display }}</span></section>
+{% if document.status == "completed" %}
+  <section class="panel result-panel"><div class="section-heading"><div><p class="eyebrow">STRUCTURED OUTPUT</p><h2>Extracted data</h2></div></div><pre class="json-output">{{ document.extracted_data|pprint }}</pre></section>
+{% elif document.status == "failed" %}
+  <section class="panel error-panel"><p class="eyebrow">PROCESSING ISSUE</p><h2>We couldn't finish this extraction.</h2><p>{{ document.error_message }}</p><form method="post" action="{% url 'retry_document' document.pk %}">{% csrf_token %}<button class="button" type="submit">Retry extraction <span aria-hidden="true">↻</span></button></form></section>
+{% else %}
+  <section class="panel"><p>Your document is still being processed. Refresh this page shortly.</p></section>
+{% endif %}
+{% if document.extraction_instructions %}<section class="panel instructions-card"><p class="eyebrow">INSTRUCTIONS USED</p><p>{{ document.extraction_instructions }}</p></section>{% endif %}
+<details class="raw-text"><summary>View extracted PDF text</summary><pre>{{ document.raw_text|default:"Text will appear here after the PDF is processed." }}</pre></details>
+{% endblock %}

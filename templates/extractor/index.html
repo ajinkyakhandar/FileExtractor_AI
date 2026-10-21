@@ -1,0 +1,39 @@
+{% extends "extractor/base.html" %}
+{% block title %}Upload PDF · Papertrail{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">DOCUMENT EXTRACTION WORKSPACE</p>
+  <h1>Turn PDFs into<br><span>structured data.</span></h1>
+  <p class="lede">Upload either of your PDF formats. The extraction agent reads the document, follows your field instructions, and saves the result for review.</p>
+</section>
+<section class="panel upload-panel">
+  <div class="section-heading"><div><p class="eyebrow">NEW EXTRACTION</p><h2>Upload a document</h2></div><span class="limit">PDF · max 20 MB</span></div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="error-box">{{ form.non_field_errors }}</div>{% endif %}
+    <label class="field-label" for="{{ form.file.id_for_label }}">PDF file</label>
+    {{ form.file }}
+    {% for error in form.file.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <label class="field-label instructions-label" for="{{ form.extraction_instructions.id_for_label }}">Extraction instructions <span>optional</span></label>
+    {{ form.extraction_instructions }}
+    <p class="hint">Tell the agent which format this is and what fields you need. For example: “Format A: extract customer, reference number, date, and total.”</p>
+    {% for error in form.extraction_instructions.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <button class="button" type="submit">Upload and extract <span aria-hidden="true">→</span></button>
+  </form>
+</section>
+<section class="history">
+  <div class="section-heading"><div><p class="eyebrow">YOUR LIBRARY</p><h2>Recent documents</h2></div><span class="count">{{ documents|length }} recent</span></div>
+  {% if documents %}
+    <div class="document-list">
+      {% for document in documents %}
+        <a class="document-row" href="{% url 'document_detail' document.pk %}">
+          <div class="pdf-icon">PDF</div><div class="document-name"><strong>{{ document.original_filename }}</strong><small>{{ document.created_at|date:"M j, Y · g:i A" }}</small></div>
+          <span class="status status-{{ document.status }}">{{ document.get_status_display }}</span><span class="row-arrow">→</span>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state"><div class="empty-icon">↥</div><strong>Your documents will appear here</strong><p>Upload a PDF above to start your first extraction.</p></div>
+  {% endif %}
+</section>
+{% endblock %}
